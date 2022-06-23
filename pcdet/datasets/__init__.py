@@ -1,5 +1,4 @@
 import torch
-from functools import partial
 from torch.utils.data import DataLoader
 from torch.utils.data import DistributedSampler as _DistributedSampler
 
@@ -45,7 +44,7 @@ class DistributedSampler(_DistributedSampler):
         return iter(indices)
 
 
-def build_dataloader(dataset_cfg, class_names, batch_size, dist, root_path=None, workers=4, seed=None,
+def build_dataloader(dataset_cfg, class_names, batch_size, dist, root_path=None, workers=4,
                      logger=None, training=True, merge_all_iters_to_one_epoch=False, total_epochs=0):
 
     dataset = __all__[dataset_cfg.DATASET](
@@ -71,7 +70,7 @@ def build_dataloader(dataset_cfg, class_names, batch_size, dist, root_path=None,
     dataloader = DataLoader(
         dataset, batch_size=batch_size, pin_memory=True, num_workers=workers,
         shuffle=(sampler is None) and training, collate_fn=dataset.collate_batch,
-        drop_last=False, sampler=sampler, timeout=0, worker_init_fn=partial(common_utils.worker_init_fn, seed=seed)
+        drop_last=False, sampler=sampler, timeout=0
     )
 
     return dataset, dataloader, sampler

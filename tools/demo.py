@@ -1,5 +1,6 @@
 import argparse
 import glob
+import pickle
 from pathlib import Path
 
 try:
@@ -45,7 +46,7 @@ class DemoDataset(DatasetTemplate):
 
     def __getitem__(self, index):
         if self.ext == '.bin':
-            points = np.fromfile(self.sample_file_list[index], dtype=np.float32).reshape(-1, 4)
+            points = np.fromfile(str(self.sample_file_list[index]), dtype=np.float32).reshape(-1, 4)
         elif self.ext == '.npy':
             points = np.load(self.sample_file_list[index])
         else:
@@ -97,14 +98,35 @@ def main():
             load_data_to_gpu(data_dict)
             pred_dicts, _ = model.forward(data_dict)
 
-            V.draw_scenes(
-                points=data_dict['points'][:, 1:], ref_boxes=pred_dicts[0]['pred_boxes'],
-                ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
-            )
+            with open('points.pickle', 'wb') as handle:
+                pickle.dump(data_dict['points'][:, 1:].cpu(), handle)
+            print('==============================Changing tensor to CPU ====================================')
+            for key in pred_dicts[0].keys():
+                pred_dicts[0][key] = pred_dicts[0][key].cpu()
 
-            if not OPEN3D_FLAG:
-                mlab.show(stop=True)
+            with open('pred_dicts0.pickle', 'wb') as handle:
+                pickle.dump(pred_dicts[0], handle)            
+            print('data_dict: ', pred_dicts[0].keys())
+            
 
+
+            with open('box.pickle', 'wb') as handle:
+                pickle.dump(pred_dicts[0]['pred_boxes'].cpu(), handle)
+            
+            with open('scores.pickle', 'wb') as handle:
+                pickle.dump(pred_dicts[0]['pred_scores'].cpu(), handle)           
+
+            with open('labels.pickle', 'wb') as handle:
+                pickle.dump(pred_dicts[0]['pred_labels'].cpu(), handle)  
+
+            # V.draw_scenes(
+            #     points=data_dict['points'][:, 1:], ref_boxes=pred_dicts[0]['pred_boxes'],
+            #     ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
+            # )
+
+            # if not OPEN3D_FLAG:
+            #     mlab.show(stop=True)
+            print("ref_box: ", pred_dicts[0]['pred_boxes'])
     logger.info('Demo done.')
 
 

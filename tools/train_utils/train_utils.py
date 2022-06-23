@@ -166,13 +166,7 @@ def save_checkpoint(state, filename='checkpoint'):
         optimizer_state = state['optimizer_state']
         state.pop('optimizer_state', None)
         optimizer_filename = '{}_optim.pth'.format(filename)
-        if torch.__version__ >= '1.4':
-            torch.save({'optimizer_state': optimizer_state}, optimizer_filename, _use_new_zipfile_serialization=False)
-        else:
-            torch.save({'optimizer_state': optimizer_state}, optimizer_filename)
+        torch.save({'optimizer_state': optimizer_state}, optimizer_filename)
 
     filename = '{}.pth'.format(filename)
-    if torch.__version__ >= '1.4':
-        torch.save(state, filename, _use_new_zipfile_serialization=False)
-    else:
-        torch.save(state, filename)
+    torch.save(state, filename)
